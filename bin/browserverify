@@ -10,7 +10,7 @@ var browserify = require('browserify');
 var shim = require('browserify-shim');
 
 program
-    .version('0.0.2')
+    .version('0.0.3')
     .option('-p, --port [number]', 'port number [8080]', '8080')
     .option('-d, --dir [path]', 'directory being served [.]', '.')
     .option('-m, --match [**/*.js]', 'only bundle files matching the given pattern', '**/*.js')
@@ -50,6 +50,7 @@ app.use(function(req, res) {
         if (err) {
             res.send(500, err);
         } else {
+            res.set('Content-Type', 'application/javascript');
             shim(browserify(filepath), shims).bundle(bundleOptions).pipe(res);
         }
     });
