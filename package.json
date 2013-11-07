@@ -1,6 +1,6 @@
 {
   "name": "browserverify",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Browserify directory server",
   "bin": "./bin/browserverify",
   "keywords": [
