@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+var path = require('path');
+var program = require('commander');
+var express = require('express');
+var browserify = require('browserify-middleware');
+
+program
+    .version('0.0.1')
+    .option('-p, --port [number]', 'port number [8080]', '8080')
+    .option('-d, --dir [path]', 'directory being served [.]', '.')
+    .option('-u, --underscored', 'serve bundle only when filename is prepended with underscore')
+    .parse(process.argv);
+
+var app = express();
+var dir = path.resolve(process.cwd(), program.dir);
+
+if (program.underscored) {
+    app.use(function(req, res, next) {
+        var filename = path.basename(req.path);
+
+        if (/^_/.test(filename)) {
+            req.url = path.join(path.dirname(req.path), filename.substr(1));
+            next();
+        } else {
+            res.sendfile(path.join(dir, req.url));
+        }
+    });
+}
+
+app.use('/', browserify(dir));
+
+app.listen(program.port);
+console.log('Serving directory %s on port %s', dir, program.port);
+

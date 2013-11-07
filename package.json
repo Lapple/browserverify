@@ -1,0 +1,16 @@
+{
+  "name": "browserverify",
+  "version": "0.0.1",
+  "description": "Browserify directory server",
+  "bin": "./bin/browserverify",
+  "keywords": [
+    "browserify",
+    "server"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "browserify-middleware": "~1.19.0",
+    "express": "~3.4.4",
+    "commander": "~2.0.0"
+  }
+}
