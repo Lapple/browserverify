@@ -9,8 +9,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "browserify-middleware": "~1.19.0",
     "express": "~3.4.4",
-    "commander": "~2.0.0"
+    "commander": "~2.0.0",
+    "minimatch": "~0.2.12",
+    "browserify": "~2.35.1",
+    "browserify-shim": "~2.0.8",
+    "findup-sync": "~0.1.2"
   }
 }

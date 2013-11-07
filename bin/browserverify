@@ -1,33 +1,59 @@
 #!/usr/bin/env node
+var fs = require('fs');
 var path = require('path');
-var program = require('commander');
+
 var express = require('express');
-var browserify = require('browserify-middleware');
+var program = require('commander');
+var findup = require('findup-sync');
+var minimatch = require('minimatch');
+var browserify = require('browserify');
+var shim = require('browserify-shim');
 
 program
-    .version('0.0.1')
+    .version('0.0.2')
     .option('-p, --port [number]', 'port number [8080]', '8080')
     .option('-d, --dir [path]', 'directory being served [.]', '.')
-    .option('-u, --underscored', 'serve bundle only when filename is prepended with underscore')
+    .option('-m, --match [**/*.js]', 'only bundle files matching the given pattern', '**/*.js')
+    .option('-s, --shimfile [browserify-shims.json]', 'browserify shim config', 'browserify-shims.json')
     .parse(process.argv);
 
-var app = express();
 var dir = path.resolve(process.cwd(), program.dir);
+var shims = {};
+var shimfile = findup(program.shimfile, { nocase: true });
 
-if (program.underscored) {
-    app.use(function(req, res, next) {
-        var filename = path.basename(req.path);
+if (shimfile) {
+    shims = require(shimfile);
 
-        if (/^_/.test(filename)) {
-            req.url = path.join(path.dirname(req.path), filename.substr(1));
-            next();
-        } else {
-            res.sendfile(path.join(dir, req.url));
-        }
-    });
+    for (var name in shims) {
+        shims[name].path = path.resolve(path.dirname(shimfile), shims[name].path);
+    }
 }
 
-app.use('/', browserify(dir));
+var bundleOptions = {
+    debug: true
+};
+
+var app = express();
+
+app.use(function(req, res, next) {
+    if (minimatch(req.path, program.match)) {
+        next();
+    } else {
+        res.sendfile(path.join(dir, req.path));
+    }
+});
+
+app.use(function(req, res) {
+    var filepath = path.join(dir, req.path);
+
+    fs.stat(filepath, function(err, stats) {
+        if (err) {
+            res.send(500, err);
+        } else {
+            shim(browserify(filepath), shims).bundle(bundleOptions).pipe(res);
+        }
+    });
+});
 
 app.listen(program.port);
 console.log('Serving directory %s on port %s', dir, program.port);
